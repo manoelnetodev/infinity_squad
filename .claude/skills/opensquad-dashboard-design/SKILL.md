@@ -116,8 +116,11 @@ For each sprite, record:
 - **Scale** — the `.setScale()` value (or 1 if not set)
 - **Depth** — the `.setDepth()` value
 - **Position** — the (x, y) expression in code (e.g. `MARGIN / 2`, `roomW - 40`)
+- **Origin** — the `.setOrigin(x, y)` value (or `(0.5, 0.5)` if not set)
+- **Alpha** — the `.setAlpha()` value (or 1 if not set)
 
 Do NOT skip any sprite. Include sprites inside loops (e.g. per-agent desk sprites).
+For `AgentSprite.ts`, record only the four `Image` objects per agent: `avatar`, `deskTable`, `desk`, and `coffeeMug`. Exclude `Graphics` and `Text` objects — these are not sprites and are evaluated separately only if a white-background artifact is suspected.
 
 #### 7.2 SCREENSHOT
 
@@ -130,6 +133,7 @@ Take screenshot via Playwright CLI:
 ```bash
 npx playwright screenshot --browser chromium "URL" "/tmp/sprite-review-before.png" --full-page
 ```
+If `npx playwright screenshot` is unavailable, use a small inline Playwright script.
 
 If URL is unreachable, tell the user to run `cd dashboard && npm run dev` and wait for confirmation before continuing.
 
