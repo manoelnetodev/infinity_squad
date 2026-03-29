@@ -173,7 +173,7 @@ export class AgentSprite {
     this.badgeBg.setDepth(900);
   }
 
-  private drawStatusDot(x: number, statusY: number, status: AgentStatus): void {
+  private drawStatusDot(x: number, _statusY: number, status: AgentStatus): void {
     const dotColor = STATUS_COLORS[status] ?? COLORS.statusIdle;
     const textW = Math.max(this.statusText.width, 24);
     this.statusDot.fillStyle(dotColor, 1);

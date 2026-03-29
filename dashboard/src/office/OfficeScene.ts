@@ -10,10 +10,22 @@ import { RoomBuilder } from './RoomBuilder';
 import { AgentSprite } from './AgentSprite';
 import type { SquadState, Agent } from '@/types/state';
 
-function pickCharacter(agent: Agent): CharacterName {
-  const pool = agent.gender === 'male' ? MALE_CHARACTERS : FEMALE_CHARACTERS;
-  const hash = [...agent.id].reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return pool[hash % pool.length];
+function assignCharacters(agents: Agent[]): Map<string, CharacterName> {
+  const assignments = new Map<string, CharacterName>();
+  let maleIndex = 0;
+  let femaleIndex = 0;
+
+  for (const agent of agents) {
+    if (agent.gender === 'male') {
+      assignments.set(agent.id, MALE_CHARACTERS[maleIndex % MALE_CHARACTERS.length]);
+      maleIndex++;
+    } else {
+      assignments.set(agent.id, FEMALE_CHARACTERS[femaleIndex % FEMALE_CHARACTERS.length]);
+      femaleIndex++;
+    }
+  }
+
+  return assignments;
 }
 
 const DEMO_AGENTS: Agent[] = [
@@ -110,11 +122,13 @@ export class OfficeScene extends Phaser.Scene {
     this.clearScene();
     this.roomBuilder.build(roomW, roomH);
 
+    const characterMap = assignCharacters(agents);
+
     for (let i = 0; i < agents.length; i++) {
       const agent = agents[i];
       const x = (agent.desk.col - 1) * cellW + MARGIN + cellW / 2;
       const y = (agent.desk.row - 1) * cellH + MARGIN + WALL_H + cellH / 2;
-      const characterName = pickCharacter(agent);
+      const characterName = characterMap.get(agent.id)!;
       const deskVariant = i % 2 === 0 ? 'black' : 'white';
       const agentSprite = new AgentSprite(this, x, y, characterName, deskVariant, agent);
       this.agentSprites.set(agent.id, agentSprite);

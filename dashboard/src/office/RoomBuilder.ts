@@ -83,7 +83,6 @@ export class RoomBuilder {
   placeFurniture(roomW: number, roomH: number): void {
     const s = this.scene;
     const centerX = roomW / 2;
-    const deskAreaTop = WALL_H + MARGIN;
     const deskAreaBottom = roomH - MARGIN;
     const loungeY = deskAreaBottom - TILE * 0.5;
 
