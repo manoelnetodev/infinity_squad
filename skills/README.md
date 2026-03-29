@@ -16,7 +16,7 @@ npx opensquad install <skill-name>
 | [blotato](./blotato/) | mcp | Publish and schedule posts across Instagram, LinkedIn, Twitter/X, TikTok, YouTube, and more. | `BLOTATO_API_KEY` | `npx opensquad install blotato` |
 | [image-fetcher](./image-fetcher/) | hybrid | Acquire visual assets via web search, live screenshots (Playwright), and user-provided files. | _(none)_ | `npx opensquad install image-fetcher` |
 | [image-creator](./image-creator/) | mcp | Render HTML/CSS into production-ready PNG images via Playwright. | _(none)_ | `npx opensquad install image-creator` |
-| [image-generator](./image-generator/) | script | Generate AI images via Openrouter API. Test mode (cheap) and production mode (high-quality). Supports reference images for brand consistency. | `OPENROUTER_API_KEY` | `npx opensquad install image-generator` |
+| [image-ai-generator](./image-ai-generator/) | script | Generate AI images via Openrouter API. Test mode (cheap) and production mode (high-quality). Supports reference images for brand consistency. | `OPENROUTER_API_KEY` | `npx opensquad install image-ai-generator` |
 
 ## Skill Types
 
@@ -44,7 +44,7 @@ skills/
     SKILL.md
   image-creator/
     SKILL.md
-  image-generator/
+  image-ai-generator/
     SKILL.md
     scripts/
       generate.py

@@ -1,5 +1,5 @@
 ---
-name: image-generator
+name: image-ai-generator
 description: >
   Generates images via Openrouter API using AI image models.
   Supports two modes: test (cheap model for iteration) and production (high-quality model for final output).
