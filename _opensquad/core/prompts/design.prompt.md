@@ -47,11 +47,11 @@ Do NOT read all files — only those relevant to this specific squad. The catalo
 
 ## Phase B: Research (gather domain knowledge)
 
-For each knowledge domain identified in discovery.yaml, use WebSearch to research:
+For each knowledge domain identified in discovery.yaml, do a focused web search. Be direct and efficient — research enough to build solid agent foundations without exhaustive surveys. Move quickly.
 
-1. **Frameworks and methodologies**: Search for "{domain} framework" and "{domain} best practices"
-   - Extract: named frameworks, step-by-step processes, proven methodologies
-   - Minimum: 3 unique sources per domain
+1. **Frameworks and methodologies**: Search for "{domain} framework" or "{domain} best practices"
+   - Extract: the 1-2 most relevant frameworks and processes
+   - 2-3 sources is sufficient — don't over-search
 
 2. **Output examples**: Search for "{domain} examples" and "best {content type} examples"
    - Extract: real examples of high-quality output in this domain
@@ -71,7 +71,7 @@ For each knowledge domain identified in discovery.yaml, use WebSearch to researc
    - These become the Voice Guidance in agent definitions
 
 Run all research as a subagent using the Task tool. Inform the user:
-"Researching {N} knowledge domains... This takes 1-2 minutes."
+"Researching {N} knowledge domains..."
 
 Compile all research into a structured research brief document. This will feed Phase C (Extraction) and be saved as `pipeline/data/research-brief.md` in the squad.
 
