@@ -39,7 +39,7 @@ function TypewriterHeader() {
         fontWeight: 700,
         letterSpacing: 3,
         textTransform: "uppercase",
-        color: "#4a9eff",
+        color: "#ff2d2d",
       }}
     >
       {displayed}
@@ -50,7 +50,7 @@ function TypewriterHeader() {
             width: 2,
             height: "1.1em",
             marginLeft: 2,
-            background: "#4a9eff",
+            background: "#4d9fff",
             animation: "blink-caret 0.6s step-end infinite",
           }}
         />

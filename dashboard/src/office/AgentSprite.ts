@@ -17,11 +17,11 @@ const STATUS_COLORS: Record<AgentStatus, number> = {
 
 // Status → display label
 const STATUS_LABELS: Record<AgentStatus, string> = {
-  idle: 'parado',
-  working: 'trabalhando',
-  done: 'concluido',
-  checkpoint: 'aprovacao',
-  delivering: 'entregando',
+  idle: 'Parado',
+  working: 'Trabalhando',
+  done: 'Concluído',
+  checkpoint: 'Aprovação',
+  delivering: 'Entregando',
 };
 
 export class AgentSprite {
@@ -224,6 +224,14 @@ export class AgentSprite {
       this.statusText.y + this.statusText.height / 2,
       3,
     );
+  }
+
+  hideAvatar(): void {
+    this.avatar.setVisible(false);
+  }
+
+  showAvatar(): void {
+    this.avatar.setVisible(true);
   }
 
   destroy(): void {

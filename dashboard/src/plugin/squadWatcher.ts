@@ -176,6 +176,33 @@ export function squadWatcherPlugin(): Plugin {
         }
       });
 
+      // REST API — reset agent status to idle after delivery animation
+      server.middlewares.use(async (req, res, next) => {
+        if (req.url !== "/api/reset-agent" || req.method !== "POST") return next();
+        let body = "";
+        req.on("data", (chunk: Buffer) => { body += chunk.toString(); });
+        req.on("end", async () => {
+          try {
+            const { squad, agentId } = JSON.parse(body);
+            const statePath = path.join(squadsDir, squad, "state.json");
+            const raw = await fsp.readFile(statePath, "utf-8");
+            const state = JSON.parse(raw);
+            if (!isValidState(state)) { res.writeHead(400); res.end("Invalid state"); return; }
+            const agent = state.agents.find((a: { id: string }) => a.id === agentId);
+            if (agent) {
+              agent.status = "idle";
+              state.updatedAt = new Date().toISOString();
+              await fsp.writeFile(statePath, JSON.stringify(state, null, 2));
+            }
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ ok: true }));
+          } catch {
+            res.writeHead(500);
+            res.end("Error");
+          }
+        });
+      });
+
       // File watcher using chokidar — reliable cross-platform, handles partial writes
       const watcher = chokidarWatch(squadsDir, {
         ignoreInitial: true,
