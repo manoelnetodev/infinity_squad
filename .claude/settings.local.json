@@ -28,7 +28,10 @@
       "Bash(find:*)",
       "Bash(xargs grep:*)",
       "Bash(node:*)",
-      "Bash(curl -s http://localhost:5174/api/snapshot)"
+      "Bash(curl -s http://localhost:5174/api/snapshot)",
+      "WebFetch(domain:infinitygravity.com.br)",
+      "WebFetch(domain:www.infinitygravity.com.br)",
+      "Bash(ls *.jpeg *.png)"
     ]
   },
   "outputStyle": "default"

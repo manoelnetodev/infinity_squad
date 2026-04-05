@@ -1,44 +1,60 @@
-# Opensquad — Project Instructions
+# BMAD Visual — Dashboard de Agentes
 
-This project uses **Opensquad**, a multi-agent orchestration framework.
+Dashboard visual 2D com agentes BMAD Method em um escritorio virtual usando Phaser.js.
 
-## Quick Start
+## Estrutura
 
-Type `/opensquad` to open the main menu, or use any of these commands:
-- `/opensquad create` — Create a new squad
-- `/opensquad run <name>` — Run a squad
-- `/opensquad help` — See all commands
+```
+├── dashboard/              ← App visual (Vite + React + Phaser.js)
+│   ├── src/office/         ← OfficeScene, AgentSprite, RoomBuilder, PhaserGame
+│   ├── src/hooks/          ← useSquadSocket (WebSocket + HTTP polling)
+│   ├── src/store/          ← useSquadStore (Zustand)
+│   ├── src/plugin/         ← squadWatcher (file watcher + reset API)
+│   ├── src/types/          ← state.ts (interfaces)
+│   └── public/assets/      ← Sprites (avatars, desks, furniture)
+├── squads/bmad/
+│   ├── squad.yaml          ← Definicao do squad
+│   ├── state.json          ← Estado dos agentes (dashboard le este arquivo)
+│   └── agents/             ← 8 definicoes de agentes BMAD
+├── .claude/skills/         ← 9 slash commands (Claude Code)
+├── .agent/workflows/       ← 9 slash commands (Antigravity)
+└── CLAUDE.md
+```
 
-## Directory Structure
+## Agentes BMAD
 
-- `_opensquad/` — Opensquad core files (do not modify manually)
-- `_opensquad/_memory/` — Persistent memory (company context, preferences)
-- `skills/` — Installed skills (integrations, scripts, prompts)
-- `squads/` — User-created squads
-- `squads/{name}/_investigations/` — Sherlock content investigations (profile analyses)
-- `squads/{name}/output/` — Generated content and files
-- `_opensquad/_browser_profile/` — Persistent browser sessions (login cookies, localStorage)
+| Comando | Agente | Funcao |
+|---------|--------|--------|
+| `/analyst` | Mary | Pesquisa de mercado e requisitos |
+| `/pm` | John | PRD, epics, stories |
+| `/ux` | Sally | UX design, personas, wireframes |
+| `/architect` | Winston | Arquitetura de sistemas |
+| `/sm` | Bob | Sprint planning, stories |
+| `/dev` | Amelia | Implementacao com TDD |
+| `/qa` | Quinn | QA, testes E2E e API |
+| `/solo-dev` | Barry | Dev rapido end-to-end |
+| `/bmad-help` | Help | Guia de agentes |
 
-## How It Works
+## Como Funciona
 
-1. The `/opensquad` skill is the entry point for all interactions
-2. The **Architect** agent creates and modifies squads
-3. During squad creation, the **Sherlock** investigator can analyze reference profiles (Instagram, YouTube, Twitter/X, LinkedIn) to extract real content patterns
-4. The **Pipeline Runner** executes squads automatically
-5. Agents communicate via persona switching (inline) or subagents (background)
-6. Checkpoints pause execution for user input/approval
+1. O dashboard le `squads/bmad/state.json` via file watcher
+2. Quando um agente e invocado via `/comando`, o skill atualiza o `state.json`
+3. O dashboard reage em tempo real: animacoes de delegacao (boss), baloes, auto-focus
+4. Sem argumentos (`/ux`): agente se apresenta
+5. Com argumentos (`/ux melhore o header`): agente executa a tarefa
 
-## Rules
+## Dashboard
 
-- Always use `/opensquad` commands to interact with the system
-- Do not manually edit files in `_opensquad/core/` unless you know what you're doing
-- Squad YAML files can be edited manually if needed, but prefer using `/opensquad edit`
-- Company context in `_opensquad/_memory/company.md` is loaded for every squad run
+```bash
+cd dashboard
+npm install
+npm run dev
+```
 
-## Browser Sessions
+Abre `http://localhost:5174`
 
-Opensquad uses a persistent Playwright browser profile to keep you logged into social media platforms.
-- Sessions are stored in `_opensquad/_browser_profile/` (gitignored, private to you)
-- First time accessing a platform, you'll log in manually once
-- Subsequent runs will reuse your saved session
-- **Important:** The native Claude Code Playwright plugin must be disabled. Opensquad uses its own `@playwright/mcp` server configured in `.mcp.json`.
+## Regras
+
+- Skills devem ser mantidos em sync entre `.claude/skills/` e `.agent/workflows/`
+- O `state.json` e o contrato entre os skills e o dashboard
+- O boss (nome do onboarding) fica no topo vigiando o time

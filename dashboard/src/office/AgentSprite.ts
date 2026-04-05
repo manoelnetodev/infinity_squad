@@ -165,10 +165,10 @@ export class AgentSprite {
     const bgW = nameW + 20;
     const bgH = 44;
     // Solid dark background with rounded corners
-    this.badgeBg.fillStyle(0x1a1225, 0.95);
+    this.badgeBg.fillStyle(0x0f1629, 0.95);
     this.badgeBg.fillRoundedRect(x - bgW / 2, labelY, bgW, bgH, 5);
     // Subtle border
-    this.badgeBg.lineStyle(1, 0x6a5a80, 0.4);
+    this.badgeBg.lineStyle(1, 0x1a2540, 0.6);
     this.badgeBg.strokeRoundedRect(x - bgW / 2, labelY, bgW, bgH, 4);
     this.badgeBg.setDepth(900);
   }

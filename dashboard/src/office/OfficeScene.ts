@@ -292,7 +292,7 @@ export class OfficeScene extends Phaser.Scene {
       const bossMsg = isIntro
         ? `${agent.name}, se apresente!`
         : `${agent.name}, aqui está sua tarefa!`;
-      this.showBubble(this.bossHomeX, bossY - 35, bossMsg, '#ffd700', 2500);
+      this.showBubble(this.bossHomeX, bossY - 35, bossMsg, '#10b981', 2500);
 
       // 3. Camera pans to agent
       this.time.delayedCall(1500, () => {
@@ -352,7 +352,7 @@ export class OfficeScene extends Phaser.Scene {
 
         // 4. Boss thanks
         this.time.delayedCall(800, () => {
-          this.showBubble(this.bossHomeX, bossY - 35, 'Muito obrigado!', '#ffd700', 2000);
+          this.showBubble(this.bossHomeX, bossY - 35, 'Muito obrigado!', '#10b981', 2000);
 
           // 5. After "Muito obrigado!" + 2s → reset agent to idle, zoom out
           this.time.delayedCall(2200, () => {
@@ -523,7 +523,7 @@ export class OfficeScene extends Phaser.Scene {
         fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
         fontSize: '18px',
         fontStyle: 'bold',
-        color: '#ffd700',
+        color: '#10b981',
         align: 'center',
         stroke: '#000000',
         strokeThickness: 4,
@@ -534,7 +534,7 @@ export class OfficeScene extends Phaser.Scene {
         fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
         fontSize: '13px',
         fontStyle: 'bold',
-        color: '#ffd700',
+        color: '#10b981',
         align: 'center',
         stroke: '#000000',
         strokeThickness: 3,
@@ -543,9 +543,9 @@ export class OfficeScene extends Phaser.Scene {
 
       const badgeW = Math.max(nameText.width, titleText.width) + 24;
       const badgeBg = this.add.graphics();
-      badgeBg.fillStyle(0x2a1a00, 0.95);
+      badgeBg.fillStyle(0x061a12, 0.95);
       badgeBg.fillRoundedRect(bossX - badgeW / 2, labelY, badgeW, 46, 5);
-      badgeBg.lineStyle(1.5, 0xffd700, 0.5);
+      badgeBg.lineStyle(1.5, 0x10b981, 0.5);
       badgeBg.strokeRoundedRect(bossX - badgeW / 2, labelY, badgeW, 46, 4);
       badgeBg.setDepth(900);
     }

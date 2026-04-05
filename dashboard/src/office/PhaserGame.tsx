@@ -31,7 +31,7 @@ export function PhaserGame() {
       pixelArt: false,
       antialias: false,
       roundPixels: true,
-      backgroundColor: '#1a1420',
+      backgroundColor: '#0a0e1a',
       scene: [OfficeScene],
       scale: {
         mode: Phaser.Scale.NONE,
@@ -94,6 +94,7 @@ export function PhaserGame() {
         flex: 1,
         overflow: 'hidden',
         imageRendering: 'auto',
+        background: '#0a0e1a',
       }}
     />
   );

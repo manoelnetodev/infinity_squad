@@ -64,7 +64,7 @@ export class RoomBuilder {
 
   private drawRoomBorder(roomW: number, roomH: number): void {
     const g = this.scene.add.graphics();
-    const bg = 0x1a1420;
+    const bg = 0x0a0e1a;
     const pad = 200; // generous padding to cover any viewport overflow
 
     // Dark overlay strips outside the room on all 4 sides
@@ -75,7 +75,7 @@ export class RoomBuilder {
     g.fillRect(roomW, -pad, pad, roomH + pad * 2);        // right
 
     // Clean 2px border around room edge
-    g.lineStyle(2, 0x2a2030, 0.8);
+    g.lineStyle(2, 0x1a2540, 0.8);
     g.strokeRect(0, 0, roomW, roomH);
     g.setDepth(1000);
   }

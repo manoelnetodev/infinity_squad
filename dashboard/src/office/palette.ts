@@ -3,17 +3,17 @@
 
 export const COLORS = {
   // Status badge dots
-  statusIdle: 0xbbbbdd,
-  statusWorking: 0x60b0ff,
-  statusDone: 0x70ff90,
-  statusCheckpoint: 0xffcc33,
+  statusIdle: 0x6b7894,
+  statusWorking: 0x3b82f6,
+  statusDone: 0x10b981,
+  statusCheckpoint: 0xf59e0b,
 
   // Name badge
-  nameCardBg: 0x14141c,
-  nameCardText: 0xffffff,
+  nameCardBg: 0x0f1629,
+  nameCardText: 0xf0f0f0,
 
   // Background
-  background: 0x1a1420,
+  background: 0x0a0e1a,
 
   // Floor fill (warm wood)
   floor: 0xc8ac86,
