@@ -26,7 +26,9 @@
       "Bash(curl -s \"https://api.github.com/repos/bmad-code-org/bmad-module-creative-intelligence-suite/git/trees/main?recursive=1\")",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const t=JSON.parse\\(d\\);if\\(t.tree\\)t.tree.filter\\(e=>e.path.includes\\('agent'\\)\\).forEach\\(e=>console.log\\(e.path\\)\\);else console.log\\(JSON.stringify\\(t\\)\\)}\\)\")",
       "Bash(find:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(node:*)",
+      "Bash(curl -s http://localhost:5174/api/snapshot)"
     ]
   },
   "outputStyle": "default"

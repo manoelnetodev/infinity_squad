@@ -3,6 +3,14 @@ import Phaser from 'phaser';
 import { OfficeScene } from './OfficeScene';
 import { useSquadStore } from '@/store/useSquadStore';
 
+function getSquadState() {
+  const state = useSquadStore.getState();
+  const selectedSquad = state.selectedSquad;
+  return selectedSquad
+    ? state.activeStates.get(selectedSquad) ?? null
+    : null;
+}
+
 export function PhaserGame() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -20,9 +28,9 @@ export function PhaserGame() {
       parent: container,
       width: w,
       height: h,
-      pixelArt: false,          // disabled globally so text renders smooth
-      antialias: false,          // keep pixel art look for sprites
-      roundPixels: true,         // snap sprites to whole pixels
+      pixelArt: false,
+      antialias: false,
+      roundPixels: true,
       backgroundColor: '#1a1420',
       scene: [OfficeScene],
       scale: {
@@ -31,6 +39,18 @@ export function PhaserGame() {
     });
 
     gameRef.current = game;
+
+    // When the scene finishes creating, push the current store state to it
+    game.events.on('ready', () => {
+      const scene = game.scene.getScene('OfficeScene') as OfficeScene | null;
+      if (!scene) return;
+
+      // Wait for scene to be fully created
+      scene.events.on('create', () => {
+        const squadState = getSquadState();
+        scene.events.emit('stateUpdate', squadState);
+      });
+    });
 
     // Resize canvas when container resizes
     const ro = new ResizeObserver((entries) => {
@@ -50,7 +70,7 @@ export function PhaserGame() {
     };
   }, []);
 
-  // Bridge React state → Phaser scene
+  // Bridge React state → Phaser scene (for ongoing updates)
   useEffect(() => {
     return useSquadStore.subscribe((state) => {
       const game = gameRef.current;

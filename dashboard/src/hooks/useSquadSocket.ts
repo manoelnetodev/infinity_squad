@@ -122,6 +122,8 @@ export function useSquadSocket() {
       };
     }
 
+    // Start polling immediately as a reliable baseline, then upgrade to WS
+    startPolling();
     connect();
 
     return () => {

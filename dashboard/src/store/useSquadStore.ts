@@ -20,7 +20,7 @@ interface SquadStore {
 export const useSquadStore = create<SquadStore>((set) => ({
   squads: new Map(),
   activeStates: new Map(),
-  selectedSquad: null,
+  selectedSquad: "bmad",
   isConnected: false,
 
   selectSquad: (name) => set({ selectedSquad: name }),

@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSquadSocket } from "@/hooks/useSquadSocket";
-import { SquadSelector } from "@/components/SquadSelector";
 import { PhaserGame } from "@/office/PhaserGame";
-import { StatusBar } from "@/components/StatusBar";
 
 const HEADER_TEXT = "Infinity Squad";
 const TYPE_SPEED = 80; // ms per character
@@ -50,7 +48,7 @@ function TypewriterHeader() {
             width: 2,
             height: "1.1em",
             marginLeft: 2,
-            background: "#4d9fff",
+            background: "#ff2d2d",
             animation: "blink-caret 0.6s step-end infinite",
           }}
         />
@@ -73,15 +71,10 @@ export function App() {
     >
       <TypewriterHeader />
 
-      {/* Main content */}
+      {/* Main content — full width, no sidebar */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        <SquadSelector />
         <PhaserGame />
       </div>
-
-      {/* Footer */}
-      <StatusBar />
     </div>
   );
 }
-
