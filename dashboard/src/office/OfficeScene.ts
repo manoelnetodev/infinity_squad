@@ -8,7 +8,7 @@ import {
 import { CELL_W, CELL_H, MARGIN, WALL_H } from './palette';
 import { RoomBuilder } from './RoomBuilder';
 import { AgentSprite } from './AgentSprite';
-import type { SquadState, Agent } from '@/types/state';
+import type { SquadState, Agent, Boss } from '@/types/state';
 
 function assignCharacters(agents: Agent[]): Map<string, CharacterName> {
   const assignments = new Map<string, CharacterName>();
@@ -152,7 +152,7 @@ export class OfficeScene extends Phaser.Scene {
       this.renderEmptyRoom();
       return;
     }
-    this.renderScene(state.agents);
+    this.renderScene(state.agents, state.boss);
 
     // Auto-focus on the working agent
     const workingAgent = state.agents.find(a => a.status === 'working');
@@ -223,7 +223,7 @@ export class OfficeScene extends Phaser.Scene {
     this.baseZoom = zoom;
   }
 
-  private renderScene(agents: Agent[]): void {
+  private renderScene(agents: Agent[], boss?: Boss): void {
     // Auto-assign desk positions if all agents are at the same spot (default 1,1)
     const allSameDesk = agents.length > 1 &&
       agents.every(a => a.desk.col === agents[0].desk.col && a.desk.row === agents[0].desk.row);
@@ -246,9 +246,10 @@ export class OfficeScene extends Phaser.Scene {
     const cellH = CELL_H + 80;   // 176px per cell (label + monitor + desk + avatar)
 
     const roomW = Math.max(maxCol * cellW + MARGIN * 2, 580);
-    // Extra space below desk grid for lounge area
+    // Extra rows: boss at top + lounge at bottom
+    const totalRows = boss ? maxRow + 1 : maxRow;
     const loungeSpace = CELL_H + 48;
-    const roomH = maxRow * cellH + MARGIN * 2 + WALL_H + loungeSpace;
+    const roomH = totalRows * cellH + MARGIN * 2 + WALL_H + loungeSpace;
 
     this.clearScene();
     this.roomBuilder.build(roomW, roomH);
@@ -256,15 +257,93 @@ export class OfficeScene extends Phaser.Scene {
     const characterMap = assignCharacters(agents);
     this.agentPositions.clear();
 
+    // Offset agents down by 1 row if boss exists (boss takes the top row)
+    const agentRowOffset = boss ? 1 : 0;
+
     for (let i = 0; i < agents.length; i++) {
       const agent = agents[i];
       const x = (agent.desk.col - 1) * cellW + MARGIN + cellW / 2;
-      const y = (agent.desk.row - 1) * cellH + MARGIN + WALL_H + cellH / 2;
+      const y = (agent.desk.row - 1 + agentRowOffset) * cellH + MARGIN + WALL_H + cellH / 2;
       const characterName = characterMap.get(agent.id)!;
       const deskVariant = i % 2 === 0 ? 'black' : 'white';
       const agentSprite = new AgentSprite(this, x, y, characterName, deskVariant, agent);
       this.agentSprites.set(agent.id, agentSprite);
       this.agentPositions.set(agent.id, { x, y });
+    }
+
+    // Render boss — centered at the TOP, behind all agents, watching the team
+    if (boss) {
+      const bossX = roomW / 2;
+      const bossY = MARGIN + WALL_H + cellH / 2 - 10;
+      const bossChar = boss.gender === 'female'
+        ? FEMALE_CHARACTERS[0]
+        : MALE_CHARACTERS[0];
+
+      // Boss avatar — normal orientation, facing forward like the agents
+      const bossAvatarKey = avatarKeys(bossChar).talk;
+      const bossAvatar = this.add.image(bossX, bossY - 70, bossAvatarKey)
+        .setOrigin(0.5, 0.5)
+        .setScale(0.9)
+        .setDepth(bossY);
+
+      // Boss animation
+      const bossKeys = avatarKeys(bossChar);
+      let bossFrame = 0;
+      this.time.addEvent({
+        delay: 600,
+        loop: true,
+        callback: () => {
+          bossFrame = (bossFrame + 1) % 2;
+          const key = bossFrame === 0 ? bossKeys.talk : bossKeys.blink;
+          bossAvatar.setTexture(key);
+          bossAvatar.setScale(0.9);
+        },
+      });
+
+      // Boss desk — slightly larger to stand out
+      this.add.image(bossX, bossY, FURNITURE_KEYS.deskWood)
+        .setOrigin(0.5, 0.5).setScale(1.5).setDepth(bossY + 1);
+
+      // Boss monitor
+      this.add.image(bossX, bossY - 30, DESK_KEYS.blackCoding)
+        .setOrigin(0.5, 0.5).setScale(1.5).setDepth(bossY + 2);
+
+      // Boss coffee
+      this.add.image(bossX + 50, bossY + 8, 'furniture_coffee_mug')
+        .setOrigin(0.5, 1).setScale(1.5).setDepth(bossY + 3);
+
+      // Boss name badge — gold accent
+      const labelY = bossY - 150;
+      const nameText = this.add.text(bossX, labelY + 5, boss.name, {
+        fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
+        fontSize: '18px',
+        fontStyle: 'bold',
+        color: '#ffd700',
+        align: 'center',
+        stroke: '#000000',
+        strokeThickness: 4,
+        resolution: 2,
+      }).setOrigin(0.5, 0).setDepth(901);
+
+      const titleText = this.add.text(bossX, labelY + 26, 'BOSS', {
+        fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
+        fontSize: '13px',
+        fontStyle: 'bold',
+        color: '#ffd700',
+        align: 'center',
+        stroke: '#000000',
+        strokeThickness: 3,
+        resolution: 2,
+      }).setOrigin(0.5, 0).setDepth(901);
+
+      // Badge background — gold border
+      const badgeW = Math.max(nameText.width, titleText.width) + 24;
+      const badgeBg = this.add.graphics();
+      badgeBg.fillStyle(0x2a1a00, 0.95);
+      badgeBg.fillRoundedRect(bossX - badgeW / 2, labelY, badgeW, 46, 5);
+      badgeBg.lineStyle(1.5, 0xffd700, 0.5);
+      badgeBg.strokeRoundedRect(bossX - badgeW / 2, labelY, badgeW, 46, 4);
+      badgeBg.setDepth(900);
     }
 
     // Fit room in viewport with slight padding

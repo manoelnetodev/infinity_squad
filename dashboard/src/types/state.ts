@@ -33,6 +33,11 @@ export type SquadStatus =
   | "completed"
   | "checkpoint";
 
+export interface Boss {
+  name: string;
+  gender?: "male" | "female";
+}
+
 export interface SquadState {
   squad: string;
   status: SquadStatus;
@@ -42,6 +47,7 @@ export interface SquadState {
     label: string;
   };
   agents: Agent[];
+  boss?: Boss;
   handoff: Handoff | null;
   startedAt: string | null;
   updatedAt: string;
