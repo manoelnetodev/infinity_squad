@@ -28,9 +28,16 @@ export const useSquadStore = create<SquadStore>((set) => ({
   setConnected: (connected) => set({ isConnected: connected }),
 
   setSnapshot: (squads, activeStates) =>
-    set({
-      squads: new Map(squads.map((s) => [s.code, s])),
-      activeStates: new Map(Object.entries(activeStates)),
+    set((prev) => {
+      const squadsMap = new Map(squads.map((s) => [s.code, s]));
+      // Auto-select "bmad" on first load if no squad is selected yet
+      const selectedSquad =
+        prev.selectedSquad ?? (squadsMap.has("bmad") ? "bmad" : null);
+      return {
+        squads: squadsMap,
+        activeStates: new Map(Object.entries(activeStates)),
+        selectedSquad,
+      };
     }),
 
   setSquadActive: (squad, state) =>

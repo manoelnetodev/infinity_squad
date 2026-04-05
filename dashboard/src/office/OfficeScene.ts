@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import {
   CHARACTER_NAMES, MALE_CHARACTERS, FEMALE_CHARACTERS, avatarKeys, avatarPath,
-  DESK_PATHS,
-  FURNITURE_PATHS,
+  DESK_PATHS, DESK_KEYS,
+  FURNITURE_PATHS, FURNITURE_KEYS,
   type CharacterName,
 } from './assetKeys';
 import { CELL_W, CELL_H, MARGIN, WALL_H } from './palette';
@@ -28,18 +28,28 @@ function assignCharacters(agents: Agent[]): Map<string, CharacterName> {
   return assignments;
 }
 
-const DEMO_AGENTS: Agent[] = [
-  { id: '1', name: 'Researcher', icon: '', status: 'working', gender: 'female', desk: { col: 1, row: 1 } },
-  { id: '2', name: 'Writer', icon: '', status: 'idle', gender: 'male', desk: { col: 2, row: 1 } },
-  { id: '3', name: 'Editor', icon: '', status: 'done', gender: 'female', desk: { col: 3, row: 1 } },
-  { id: '4', name: 'Designer', icon: '', status: 'working', gender: 'female', desk: { col: 1, row: 2 } },
-  { id: '5', name: 'Reviewer', icon: '', status: 'checkpoint', gender: 'male', desk: { col: 2, row: 2 } },
-  { id: '6', name: 'Publisher', icon: '', status: 'idle', gender: 'male', desk: { col: 3, row: 2 } },
+// Layout used for the empty room (desks without agents)
+const EMPTY_DESKS = [
+  { col: 1, row: 1 },
+  { col: 2, row: 1 },
+  { col: 3, row: 1 },
+  { col: 1, row: 2 },
+  { col: 2, row: 2 },
+  { col: 3, row: 2 },
 ];
 
 export class OfficeScene extends Phaser.Scene {
   private agentSprites: Map<string, AgentSprite> = new Map();
+  private agentPositions: Map<string, { x: number; y: number }> = new Map();
   private roomBuilder!: RoomBuilder;
+  private isDragging = false;
+  private dragPrevX = 0;
+  private dragPrevY = 0;
+  private baseZoom = 1;
+  private roomCenterX = 0;
+  private roomCenterY = 0;
+  private focusedAgentId: string | null = null;
+  private userOverride = false;  // true when user manually pans/zooms
 
   constructor() {
     super({ key: 'OfficeScene' });
@@ -84,12 +94,133 @@ export class OfficeScene extends Phaser.Scene {
       this.onStateUpdate(state);
     });
 
-    this.renderScene(DEMO_AGENTS);
+    // Zoom with mouse wheel — marks user override
+    this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: unknown[], _dx: number, dy: number) => {
+      const cam = this.cameras.main;
+      const zoomDelta = dy > 0 ? -0.15 : 0.15;
+      const newZoom = Phaser.Math.Clamp(cam.zoom + zoomDelta, 0.3, 5);
+      cam.setZoom(newZoom);
+      this.userOverride = true;
+    });
+
+    // Pan with left-click drag — marks user override
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.leftButtonDown()) {
+        this.isDragging = true;
+        this.dragPrevX = pointer.x;
+        this.dragPrevY = pointer.y;
+      }
+    });
+
+    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (!this.isDragging) return;
+      const cam = this.cameras.main;
+      const dx = (this.dragPrevX - pointer.x) / cam.zoom;
+      const dy = (this.dragPrevY - pointer.y) / cam.zoom;
+      cam.scrollX += dx;
+      cam.scrollY += dy;
+      this.dragPrevX = pointer.x;
+      this.dragPrevY = pointer.y;
+      this.userOverride = true;
+    });
+
+    this.input.on('pointerup', () => {
+      this.isDragging = false;
+    });
+
+    // Double-click to reset zoom and re-enable auto-focus
+    let lastClickTime = 0;
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      const now = Date.now();
+      if (now - lastClickTime < 300 && pointer.leftButtonDown()) {
+        this.userOverride = false;
+        this.focusedAgentId = null;
+        const cam = this.cameras.main;
+        cam.pan(this.roomCenterX, this.roomCenterY, 400, 'Sine.easeInOut');
+        cam.zoomTo(this.baseZoom, 400);
+      }
+      lastClickTime = now;
+    });
+
+    // Start with empty desks (no agents)
+    this.renderEmptyRoom();
   }
 
   private onStateUpdate(state: SquadState | null): void {
-    const agents = state?.agents ?? DEMO_AGENTS;
-    this.renderScene(agents);
+    if (!state) {
+      this.focusedAgentId = null;
+      this.renderEmptyRoom();
+      return;
+    }
+    this.renderScene(state.agents);
+
+    // Auto-focus on the working agent
+    const workingAgent = state.agents.find(a => a.status === 'working');
+    if (workingAgent && !this.userOverride) {
+      const pos = this.agentPositions.get(workingAgent.id);
+      if (pos && this.focusedAgentId !== workingAgent.id) {
+        this.focusedAgentId = workingAgent.id;
+        const cam = this.cameras.main;
+        const focusZoom = Math.max(this.baseZoom * 2.2, 1.8);
+        cam.pan(pos.x, pos.y - 40, 800, 'Sine.easeInOut');
+        cam.zoomTo(focusZoom, 800);
+      }
+    } else if (!workingAgent && this.focusedAgentId && !this.userOverride) {
+      // No one working anymore — zoom back out
+      this.focusedAgentId = null;
+      const cam = this.cameras.main;
+      cam.pan(this.roomCenterX, this.roomCenterY, 800, 'Sine.easeInOut');
+      cam.zoomTo(this.baseZoom, 800);
+    }
+  }
+
+  /** Renders the room with desks, monitors and mugs — but no agents sitting at them. */
+  private renderEmptyRoom(): void {
+    const desks = EMPTY_DESKS;
+    let maxCol = 0, maxRow = 0;
+    for (const d of desks) {
+      maxCol = Math.max(maxCol, d.col);
+      maxRow = Math.max(maxRow, d.row);
+    }
+
+    const cellW = CELL_W + 64;
+    const cellH = CELL_H + 80;
+    const roomW = Math.max(maxCol * cellW + MARGIN * 2, 580);
+    const loungeSpace = CELL_H + 48;
+    const roomH = maxRow * cellH + MARGIN * 2 + WALL_H + loungeSpace;
+
+    this.clearScene();
+    this.roomBuilder.build(roomW, roomH);
+
+    // Place empty desks (table + monitor + mug, no avatar or label)
+    for (let i = 0; i < desks.length; i++) {
+      const d = desks[i];
+      const x = (d.col - 1) * cellW + MARGIN + cellW / 2;
+      const y = (d.row - 1) * cellH + MARGIN + WALL_H + cellH / 2;
+      const variant = i % 2 === 0 ? 'black' : 'white';
+
+      // Desk table surface
+      this.add.image(x, y, FURNITURE_KEYS.deskWood)
+        .setOrigin(0.5, 0.5).setScale(1.3).setDepth(y + 1);
+
+      // Monitor on desk
+      const deskKey = variant === 'black' ? DESK_KEYS.blackCoding : DESK_KEYS.whiteCoding;
+      this.add.image(x, y - 30, deskKey)
+        .setOrigin(0.5, 0.5).setScale(1.3).setDepth(y + 2);
+
+      // Coffee mug
+      this.add.image(x + 42, y + 8, 'furniture_coffee_mug')
+        .setOrigin(0.5, 1).setScale(1.4).setDepth(y + 3);
+    }
+
+    // Fit room in viewport
+    const cam = this.cameras.main;
+    const scaleX = cam.width / (roomW + 32);
+    const scaleY = cam.height / (roomH + 32);
+    const zoom = Math.min(scaleX, scaleY, 2);
+    cam.setZoom(zoom);
+    cam.centerOn(roomW / 2, roomH / 2);
+    this.baseZoom = zoom;
   }
 
   private renderScene(agents: Agent[]): void {
@@ -123,6 +254,7 @@ export class OfficeScene extends Phaser.Scene {
     this.roomBuilder.build(roomW, roomH);
 
     const characterMap = assignCharacters(agents);
+    this.agentPositions.clear();
 
     for (let i = 0; i < agents.length; i++) {
       const agent = agents[i];
@@ -132,6 +264,7 @@ export class OfficeScene extends Phaser.Scene {
       const deskVariant = i % 2 === 0 ? 'black' : 'white';
       const agentSprite = new AgentSprite(this, x, y, characterName, deskVariant, agent);
       this.agentSprites.set(agent.id, agentSprite);
+      this.agentPositions.set(agent.id, { x, y });
     }
 
     // Fit room in viewport with slight padding
@@ -139,8 +272,15 @@ export class OfficeScene extends Phaser.Scene {
     const scaleX = cam.width / (roomW + 32);
     const scaleY = cam.height / (roomH + 32);
     const zoom = Math.min(scaleX, scaleY, 2);
-    cam.setZoom(zoom);
-    cam.centerOn(roomW / 2, roomH / 2);
+    this.baseZoom = zoom;
+    this.roomCenterX = roomW / 2;
+    this.roomCenterY = roomH / 2;
+
+    // Only reset camera if no auto-focus is active
+    if (!this.focusedAgentId || this.userOverride) {
+      cam.setZoom(zoom);
+      cam.centerOn(roomW / 2, roomH / 2);
+    }
   }
 
   private clearScene(): void {
@@ -151,3 +291,4 @@ export class OfficeScene extends Phaser.Scene {
     this.children.removeAll(true);
   }
 }
+
