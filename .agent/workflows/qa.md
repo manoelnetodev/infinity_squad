@@ -11,7 +11,7 @@ description: BMAD QA Engineer — Quinn. BMAD QA validation, E2E tests, API test
 5. Set `"updatedAt"` to current ISO timestamp
 6. Write the updated `state.json` back
 
-Then read `.claude/skills/qa/SKILL.md` and follow ALL instructions (skip the Dashboard Update section there since you already did it above).
+Then read `.claude/skills/bmad-agent-qa/SKILL.md` and follow ALL instructions (skip the Dashboard Update section there since you already did it above).
 
 When your work is complete:
 1. Read `squads/bmad/state.json`

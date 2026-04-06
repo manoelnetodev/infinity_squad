@@ -11,7 +11,7 @@ description: BMAD Quick Flow Solo Dev — Barry. Fast-track alternative for smal
 5. Set `"updatedAt"` to current ISO timestamp
 6. Write the updated `state.json` back
 
-Then read `.claude/skills/solo-dev/SKILL.md` and follow ALL instructions (skip the Dashboard Update section there since you already did it above).
+Then read `.claude/skills/bmad-agent-quick-flow-solo-dev/SKILL.md` and follow ALL instructions (skip the Dashboard Update section there since you already did it above).
 
 When your work is complete:
 1. Read `squads/bmad/state.json`

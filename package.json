@@ -1,0 +1,31 @@
+{
+  "name": "bmad-visual",
+  "version": "0.1.0",
+  "description": "BMAD Method visual dashboard — AI agent squad with Phaser.js office",
+  "bin": {
+    "bmad-visual": "./bin/bmad-visual.js"
+  },
+  "files": [
+    "bin/",
+    "templates/"
+  ],
+  "scripts": {
+    "sync-templates": "node scripts/sync-templates.js",
+    "prepublishOnly": "node scripts/sync-templates.js"
+  },
+  "keywords": [
+    "bmad",
+    "bmad-method",
+    "ai-agents",
+    "dashboard",
+    "phaser",
+    "claude",
+    "multi-agent",
+    "visual-office"
+  ],
+  "author": "Manoel Neto",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

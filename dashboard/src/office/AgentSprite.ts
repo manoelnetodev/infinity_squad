@@ -15,6 +15,106 @@ const STATUS_COLORS: Record<AgentStatus, number> = {
   delivering: COLORS.statusWorking,
 };
 
+// Agent ID → slash command mapping
+const SLASH_COMMANDS: Record<string, string> = {
+  'analyst': '/analyst',
+  'tech-writer': '/tech-writer',
+  'pm': '/pm',
+  'ux-designer': '/ux',
+  'architect': '/architect',
+  'developer': '/dev',
+  'scrum-master': '/sm',
+  'qa-engineer': '/qa',
+  'solo-dev': '/solo-dev',
+};
+
+// Agent ID → profile info (title, capabilities)
+const AGENT_PROFILES: Record<string, { title: string; style: string; capabilities: string[] }> = {
+  'analyst': {
+    title: 'Business Analyst',
+    style: 'Fala como uma caçadora de tesouros — empolgada com cada pista!',
+    capabilities: [
+      'BP — Brainstorming facilitado',
+      'MR — Pesquisa de mercado e competidores',
+      'DR — Pesquisa de domínio e indústria',
+      'TR — Pesquisa técnica e viabilidade',
+      'CB — Criar/atualizar product brief',
+      'DP — Documentar projeto existente',
+    ],
+  },
+  'tech-writer': {
+    title: 'Technical Writer',
+    style: 'Educadora paciente que explica como uma amiga.',
+    capabilities: [
+      'DP — Documentação completa de projeto',
+      'WD — Escrever documento técnico',
+      'MG — Gerar diagrama Mermaid',
+      'VD — Validar documentação',
+      'EC — Explicar conceitos técnicos',
+    ],
+  },
+  'pm': {
+    title: 'Product Manager',
+    style: 'Pergunta "POR QUÊ?" como um detetive. Direto e afiado.',
+    capabilities: [
+      'CP — Criar PRD do zero',
+      'VP — Validar PRD existente',
+      'EP — Editar PRD existente',
+      'CE — Criar épicos e stories',
+      'IR — Verificar prontidão para implementação',
+      'CC — Corrigir curso do sprint',
+    ],
+  },
+  'ux-designer': {
+    title: 'UX Designer',
+    style: 'Pinta com palavras, conta histórias que fazem sentir o problema.',
+    capabilities: [
+      'CU — Criar design UX completo',
+    ],
+  },
+  'architect': {
+    title: 'System Architect',
+    style: 'Tom calmo e pragmático, equilibra o possível com o ideal.',
+    capabilities: [
+      'CA — Criar arquitetura e decisões técnicas',
+      'IR — Verificar prontidão para implementação',
+    ],
+  },
+  'developer': {
+    title: 'Senior Software Engineer',
+    style: 'Ultra-sucinta. Fala em paths e IDs — zero enrolação.',
+    capabilities: [
+      'DS — Implementar story com TDD',
+      'CR — Code review adversarial',
+    ],
+  },
+  'qa-engineer': {
+    title: 'QA Engineer',
+    style: 'Prática e direta. Foco em cobertura primeiro.',
+    capabilities: [
+      'QA — Gerar testes E2E e API',
+    ],
+  },
+  'solo-dev': {
+    title: 'Quick Flow Solo Dev',
+    style: 'Direto, confiante. Sem firula, só resultado.',
+    capabilities: [
+      'QD — Quick flow: clarificar, planejar, implementar, revisar',
+      'CR — Code review adversarial',
+    ],
+  },
+  'scrum-master': {
+    title: 'Scrum Master',
+    style: 'Checklist-driven. Cada palavra tem propósito.',
+    capabilities: [
+      'SP — Gerar/atualizar sprint plan',
+      'CS — Preparar story para implementação',
+      'ER — Retrospectiva do épico',
+      'CC — Corrigir curso do sprint',
+    ],
+  },
+};
+
 // Status → display label
 const STATUS_LABELS: Record<AgentStatus, string> = {
   idle: 'Parado',
@@ -25,6 +125,14 @@ const STATUS_LABELS: Record<AgentStatus, string> = {
 };
 
 export class AgentSprite {
+  private static openDialog: AgentSprite | null = null;
+
+  static closeOpenDialog(): void {
+    if (AgentSprite.openDialog) {
+      AgentSprite.openDialog.hideDialog();
+    }
+  }
+
   private scene: Phaser.Scene;
   private deskTable: Phaser.GameObjects.Image;
   private deskShadow: Phaser.GameObjects.Graphics;
@@ -40,6 +148,7 @@ export class AgentSprite {
   private characterName: CharacterName;
   private deskVariant: 'black' | 'white';
   private avatarDisplayH: number = 0;
+  private dialogGroup: Phaser.GameObjects.Group | null = null;
 
   constructor(
     scene: Phaser.Scene,
@@ -109,7 +218,9 @@ export class AgentSprite {
     this.badgeBg = scene.add.graphics();
 
     // Name text — bold, clean, high contrast
-    this.nameText = scene.add.text(x, labelY + 5, agent.name, {
+    const slash = SLASH_COMMANDS[agent.id] || '';
+    const displayName = slash ? `${agent.name}  ${slash}` : agent.name;
+    this.nameText = scene.add.text(x, labelY + 5, displayName, {
       fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
       fontSize: '16px',
       fontStyle: 'bold',
@@ -120,6 +231,18 @@ export class AgentSprite {
       resolution: 2,
     }).setOrigin(0.5, 0);
     this.nameText.setDepth(901);
+
+    // Click to copy slash command
+    if (slash) {
+      this.nameText.setInteractive({ useHandCursor: true });
+      this.nameText.on('pointerdown', () => {
+        navigator.clipboard.writeText(slash).then(() => {
+          const original = this.nameText.text;
+          this.nameText.setText('Copiado!');
+          scene.time.delayedCall(1000, () => this.nameText.setText(original));
+        });
+      });
+    }
 
     // Status dot
     this.statusDot = scene.add.graphics();
@@ -143,6 +266,13 @@ export class AgentSprite {
     this.drawStatusDot(x, labelY + 22, agent.status);
 
     this.startAnimation(agent.status);
+
+    // Click avatar to show agent profile dialog
+    this.avatar.setInteractive({ useHandCursor: true });
+    this.avatar.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      pointer.event.stopPropagation();
+      this.toggleDialog();
+    });
   }
 
   private getStatusHexColor(status: AgentStatus): string {
@@ -201,6 +331,118 @@ export class AgentSprite {
     });
   }
 
+  // Optional callback to close external dialogs (e.g. boss dialog)
+  static onDialogOpen: (() => void) | null = null;
+
+  private toggleDialog(): void {
+    if (this.dialogGroup) {
+      this.hideDialog();
+      return;
+    }
+    // Close any other open dialog first
+    if (AgentSprite.openDialog && AgentSprite.openDialog !== this) {
+      AgentSprite.openDialog.hideDialog();
+    }
+    // Close boss dialog if open
+    AgentSprite.onDialogOpen?.();
+    this.showDialog();
+  }
+
+  private showDialog(): void {
+    const profile = AGENT_PROFILES[this.agent.id];
+    if (!profile) return;
+
+    this.dialogGroup = this.scene.add.group();
+    const cx = this.avatar.x;
+    const cy = this.avatar.y - 180;
+
+    const lines = [
+      `${this.agent.name} — ${profile.title}`,
+      '',
+      `"${profile.style}"`,
+      '',
+      '── Capacidades ──',
+      ...profile.capabilities,
+    ];
+    const content = lines.join('\n');
+
+    // Measure text to size the panel
+    const textObj = this.scene.add.text(cx, cy, content, {
+      fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
+      fontSize: '11px',
+      color: '#e2e8f0',
+      align: 'left',
+      lineSpacing: 4,
+      wordWrap: { width: 240 },
+      resolution: 2,
+    }).setOrigin(0.5, 0.5).setDepth(1002);
+
+    const padX = 16;
+    const padY = 14;
+    const panelW = textObj.width + padX * 2;
+    const panelH = textObj.height + padY * 2;
+
+    // Panel background
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(0x0f1629, 0.96);
+    bg.fillRoundedRect(cx - panelW / 2, cy - panelH / 2, panelW, panelH, 8);
+    bg.lineStyle(1.5, 0x3b82f6, 0.7);
+    bg.strokeRoundedRect(cx - panelW / 2, cy - panelH / 2, panelW, panelH, 8);
+    bg.setDepth(1001);
+
+    // Title underline accent
+    const accentY = cy - panelH / 2 + padY + 16;
+    bg.lineStyle(1, 0x3b82f6, 0.4);
+    bg.lineBetween(cx - panelW / 2 + padX, accentY, cx + panelW / 2 - padX, accentY);
+
+    // Tail triangle pointing down to avatar
+    const tailX = cx;
+    const tailY = cy + panelH / 2;
+    bg.fillStyle(0x0f1629, 0.96);
+    bg.fillTriangle(tailX - 6, tailY, tailX + 6, tailY, tailX, tailY + 10);
+
+    // Close button (X)
+    const closeBtn = this.scene.add.text(cx + panelW / 2 - 10, cy - panelH / 2 + 4, '✕', {
+      fontFamily: 'Arial',
+      fontSize: '13px',
+      color: '#64748b',
+      resolution: 2,
+    }).setOrigin(0.5, 0).setDepth(1003).setInteractive({ useHandCursor: true });
+    closeBtn.on('pointerover', () => closeBtn.setColor('#f87171'));
+    closeBtn.on('pointerout', () => closeBtn.setColor('#64748b'));
+    closeBtn.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      p.event.stopPropagation();
+      this.hideDialog();
+    });
+
+    this.dialogGroup.addMultiple([bg, textObj, closeBtn]);
+
+    // Animate in
+    const targets = [bg, textObj, closeBtn];
+    for (const t of targets) {
+      (t as Phaser.GameObjects.Components.AlphaSingle).alpha = 0;
+    }
+    this.scene.tweens.add({ targets, alpha: 1, duration: 200, ease: 'Sine.easeOut' });
+    AgentSprite.openDialog = this;
+  }
+
+  private hideDialog(): void {
+    if (!this.dialogGroup) return;
+    const children = this.dialogGroup.getChildren().slice();
+    this.scene.tweens.add({
+      targets: children,
+      alpha: 0,
+      duration: 150,
+      ease: 'Sine.easeIn',
+      onComplete: () => {
+        for (const c of children) c.destroy();
+        this.dialogGroup?.destroy(true);
+        this.dialogGroup = null;
+        if (AgentSprite.openDialog === this) AgentSprite.openDialog = null;
+      },
+    });
+  }
+
   updateStatus(agent: Agent): void {
     if (this.agent.status === agent.status) return;
     this.agent = agent;
@@ -236,6 +478,8 @@ export class AgentSprite {
 
   destroy(): void {
     this.animTimer?.destroy();
+    this.dialogGroup?.destroy(true);
+    this.dialogGroup = null;
     this.deskTable.destroy();
     this.deskShadow.destroy();
     this.desk.destroy();

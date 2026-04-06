@@ -17,11 +17,12 @@ export class RoomBuilder {
   }
 
   private drawFloor(roomW: number, roomH: number): void {
+    const R = 16; // corner radius
     const g = this.scene.add.graphics();
-    // Main floor fill
+    // Main floor fill with rounded bottom corners
     g.fillStyle(COLORS.floor, 1);
-    g.fillRect(0, WALL_H, roomW, roomH - WALL_H);
-    // Checkerboard texture
+    g.fillRoundedRect(0, WALL_H, roomW, roomH - WALL_H, { tl: 0, tr: 0, bl: R, br: R });
+    // Checkerboard texture (clipped by the rounded shape visually)
     g.fillStyle(COLORS.floorAlt, 0.25);
     for (let y = WALL_H; y < roomH; y += TILE) {
       for (let x = 0; x < roomW; x += TILE) {
@@ -41,18 +42,19 @@ export class RoomBuilder {
     g.fillRect(roomW - 6, WALL_H, 6, roomH - WALL_H);
     // Subtle warm highlight on bottom edge
     g.fillStyle(0xddc89e, 0.15);
-    g.fillRect(0, roomH - 4, roomW, 4);
+    g.fillRoundedRect(0, roomH - 4, roomW, 4, { tl: 0, tr: 0, bl: R, br: R });
     g.setDepth(-2);
   }
 
   private drawWalls(roomW: number): void {
+    const R = 16; // corner radius
     const g = this.scene.add.graphics();
-    // Wall background — slight gradient effect with two tones
+    // Wall background with rounded top corners
     g.fillStyle(COLORS.wall, 1);
-    g.fillRect(0, 0, roomW, WALL_H);
+    g.fillRoundedRect(0, 0, roomW, WALL_H, { tl: R, tr: R, bl: 0, br: 0 });
     // Lighter upper band for depth
     g.fillStyle(0xede2d6, 1);
-    g.fillRect(0, 0, roomW, WALL_H / 3);
+    g.fillRoundedRect(0, 0, roomW, WALL_H / 3, { tl: R, tr: R, bl: 0, br: 0 });
     // Baseboard trim
     g.fillStyle(COLORS.wallTrim, 1);
     g.fillRect(0, WALL_H - 5, roomW, 5);
@@ -63,6 +65,7 @@ export class RoomBuilder {
   }
 
   private drawRoomBorder(roomW: number, roomH: number): void {
+    const R = 16; // corner radius
     const g = this.scene.add.graphics();
     const bg = 0x0a0e1a;
     const pad = 200; // generous padding to cover any viewport overflow
@@ -74,9 +77,9 @@ export class RoomBuilder {
     g.fillRect(-pad, -pad, pad, roomH + pad * 2);         // left
     g.fillRect(roomW, -pad, pad, roomH + pad * 2);        // right
 
-    // Clean 2px border around room edge
+    // Rounded 2px border around room edge
     g.lineStyle(2, 0x1a2540, 0.8);
-    g.strokeRect(0, 0, roomW, roomH);
+    g.strokeRoundedRect(0, 0, roomW, roomH, R);
     g.setDepth(1000);
   }
 

@@ -1,0 +1,70 @@
+name: "BMAD Method"
+code: "bmad"
+description: >
+  Squad baseado no BMAD Method (Breakthrough Method of Agile AI-Driven Development).
+  Time completo de 8 agentes especializados que cobrem todo o ciclo de desenvolvimento
+  de produto: da analise de mercado ate a implementacao, passando por planejamento,
+  UX design, arquitetura de sistemas, scrum, QA e desenvolvimento rapido.
+icon: "🚀"
+version: "1.0.0"
+created: "2026-04-05"
+mode: "alta-performance"
+
+company: "_opensquad/_memory/company.md"
+preferences: "_opensquad/_memory/preferences.md"
+memory: "_memory/memories.md"
+
+skills:
+  - web_search
+  - web_fetch
+
+agents:
+  - id: analyst
+    name: "Mary"
+    icon: "🔍"
+    agent: agents/analyst.agent.md
+
+  - id: tech-writer
+    name: "Paige"
+    icon: "📝"
+    agent: agents/tech-writer.agent.md
+
+  - id: pm
+    name: "John"
+    icon: "📋"
+    agent: agents/pm.agent.md
+
+  - id: ux-designer
+    name: "Sally"
+    icon: "🎨"
+    agent: agents/ux-designer.agent.md
+
+  - id: architect
+    name: "Winston"
+    icon: "🏗️"
+    agent: agents/architect.agent.md
+
+  - id: developer
+    name: "Amelia"
+    icon: "💻"
+    agent: agents/developer.agent.md
+
+  - id: scrum-master
+    name: "Bob"
+    icon: "📊"
+    agent: agents/scrum-master.agent.md
+
+  - id: qa-engineer
+    name: "Quinn"
+    icon: "🧪"
+    agent: agents/qa-engineer.agent.md
+
+  - id: solo-dev
+    name: "Barry"
+    icon: "⚡"
+    agent: agents/solo-dev.agent.md
+
+pipeline:
+  entry: pipeline/pipeline.yaml
+
+output_dir: output/

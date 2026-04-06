@@ -53,15 +53,15 @@ export class OfficeScene extends Phaser.Scene {
 
   // Boss animation state
   private bossAvatar: Phaser.GameObjects.Image | null = null;
-  private bossCharName: CharacterName = 'Male1';
+
   private bossHomeX = 0;
   private bossHomeY = 0;
   private prevStatuses: Map<string, AgentStatus> = new Map();
+  private prevHandoff: string | null = null; // serialized handoff to detect changes
   private animating = false;
   private pendingState: SquadState | null = null;
   private characterMap: Map<string, CharacterName> = new Map();
   private currentSquadCode = '';
-  private hasIntroPlayed = false;
 
   // Agent role descriptions in Portuguese
   private static readonly AGENT_ROLES: Record<string, string> = {
@@ -107,6 +107,9 @@ export class OfficeScene extends Phaser.Scene {
     });
 
     this.roomBuilder = new RoomBuilder(this);
+
+    // Close boss dialog when an agent dialog opens
+    AgentSprite.onDialogOpen = () => this.hideBossDialog();
 
     this.events.on('stateUpdate', (state: SquadState | null) => {
       this.onStateUpdate(state);
@@ -199,6 +202,34 @@ export class OfficeScene extends Phaser.Scene {
     // Save current statuses for next comparison
     for (const agent of state.agents) {
       this.prevStatuses.set(agent.id, agent.status);
+    }
+
+    // Detect handoff changes
+    const handoffKey = state.handoff ? `${state.handoff.from}→${state.handoff.to}` : null;
+    const isNewHandoff = handoffKey !== null && handoffKey !== this.prevHandoff && !state.handoff?.completedAt;
+    const isHandoffDone = this.prevHandoff !== null && (handoffKey === null || !!state.handoff?.completedAt) && this.prevHandoff !== handoffKey;
+    this.prevHandoff = state.handoff?.completedAt ? null : handoffKey;
+
+    // Reset manual override when an agent changes state so auto-zoom works
+    if (newWorkingAgent || newDoneAgent || isNewHandoff || isHandoffDone) {
+      this.userOverride = false;
+      this.focusedAgentId = null;
+    }
+
+    // Play handoff animation: agent A asks agent B for help (no boss involved)
+    if (isNewHandoff && state.handoff) {
+      const fromAgent = state.agents.find(a => a.id === state.handoff!.from);
+      const toAgent = state.agents.find(a => a.id === state.handoff!.to);
+      if (fromAgent && toAgent) {
+        this.playHandoff(fromAgent, toAgent, state.handoff.message);
+        return;
+      }
+    }
+
+    // Play handoff completion: both agents report to boss
+    if (isHandoffDone && newDoneAgent && state.boss && this.bossAvatar) {
+      this.playDelivery(newDoneAgent);
+      return;
     }
 
     // Play delegation animation if someone just started working
@@ -381,6 +412,157 @@ export class OfficeScene extends Phaser.Scene {
     });
   }
 
+  // ─── Boss Info Dialog ───────────────────────────────────────
+  private bossDialogGroup: Phaser.GameObjects.Group | null = null;
+
+  private toggleBossDialog(bossX: number, bossY: number): void {
+    if (this.bossDialogGroup) {
+      this.hideBossDialog();
+    } else {
+      // Close any agent dialog first
+      AgentSprite.closeOpenDialog();
+      this.showBossDialog(bossX, bossY);
+    }
+  }
+
+  private showBossDialog(bossX: number, bossY: number): void {
+    this.bossDialogGroup = this.add.group();
+    const cx = bossX;
+    const cy = bossY - 250;
+
+    const lines = [
+      'BMAD — Boss & Help',
+      '',
+      '"Eu guio o time e ajudo você a',
+      'encontrar o agente certo!"',
+      '',
+      '── O que /bmad-help faz ──',
+      'Analisa o estado atual do projeto',
+      'Recomenda o próximo skill a usar',
+      'Responde dúvidas sobre o BMAD',
+      'Sugere qual agente chamar',
+      '',
+      '── Dica ──',
+      'Clique no nome para copiar',
+      'o comando /bmad-help',
+    ];
+    const content = lines.join('\n');
+
+    const textObj = this.add.text(cx, cy, content, {
+      fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
+      fontSize: '11px',
+      color: '#a7f3d0',
+      align: 'left',
+      lineSpacing: 4,
+      wordWrap: { width: 240 },
+      resolution: 2,
+    }).setOrigin(0.5, 0.5).setDepth(1002);
+
+    const padX = 16;
+    const padY = 14;
+    const panelW = textObj.width + padX * 2;
+    const panelH = textObj.height + padY * 2;
+
+    const bg = this.add.graphics();
+    bg.fillStyle(0x061a12, 0.96);
+    bg.fillRoundedRect(cx - panelW / 2, cy - panelH / 2, panelW, panelH, 8);
+    bg.lineStyle(1.5, 0x10b981, 0.7);
+    bg.strokeRoundedRect(cx - panelW / 2, cy - panelH / 2, panelW, panelH, 8);
+    bg.setDepth(1001);
+
+    // Tail
+    const tailY = cy + panelH / 2;
+    bg.fillStyle(0x061a12, 0.96);
+    bg.fillTriangle(cx - 6, tailY, cx + 6, tailY, cx, tailY + 10);
+
+    // Close button
+    const closeBtn = this.add.text(cx + panelW / 2 - 10, cy - panelH / 2 + 4, '✕', {
+      fontFamily: 'Arial',
+      fontSize: '13px',
+      color: '#4ade80',
+      resolution: 2,
+    }).setOrigin(0.5, 0).setDepth(1003).setInteractive({ useHandCursor: true });
+    closeBtn.on('pointerover', () => closeBtn.setColor('#f87171'));
+    closeBtn.on('pointerout', () => closeBtn.setColor('#4ade80'));
+    closeBtn.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      p.event.stopPropagation();
+      this.hideBossDialog();
+    });
+
+    this.bossDialogGroup.addMultiple([bg, textObj, closeBtn]);
+
+    const targets = [bg, textObj, closeBtn];
+    for (const t of targets) {
+      (t as Phaser.GameObjects.Components.AlphaSingle).alpha = 0;
+    }
+    this.tweens.add({ targets, alpha: 1, duration: 200, ease: 'Sine.easeOut' });
+  }
+
+  private hideBossDialog(): void {
+    if (!this.bossDialogGroup) return;
+    const children = this.bossDialogGroup.getChildren().slice();
+    this.tweens.add({
+      targets: children,
+      alpha: 0,
+      duration: 150,
+      ease: 'Sine.easeIn',
+      onComplete: () => {
+        for (const c of children) c.destroy();
+        this.bossDialogGroup?.destroy(true);
+        this.bossDialogGroup = null;
+      },
+    });
+  }
+
+  // ─── Agent-to-Agent Handoff (no boss) ───────────────────────
+  private playHandoff(fromAgent: Agent, toAgent: Agent, message: string): void {
+    const fromPos = this.agentPositions.get(fromAgent.id);
+    const toPos = this.agentPositions.get(toAgent.id);
+    if (!fromPos || !toPos) return;
+
+    this.animating = true;
+    const fromY = fromPos.y - 70;
+    const toY = toPos.y - 70;
+    const cam = this.cameras.main;
+
+    // 1. Camera pans to agent A (the one asking for help)
+    if (!this.userOverride) {
+      const focusZoom = Math.max(this.baseZoom * 2, 1.6);
+      cam.pan(fromPos.x, fromPos.y - 40, 600, 'Sine.easeInOut');
+      cam.zoomTo(focusZoom, 600);
+    }
+
+    // 2. Agent A calls for help
+    this.time.delayedCall(800, () => {
+      const callMsg = message || `${toAgent.name}, preciso da sua ajuda!`;
+      this.showBubble(fromPos.x, fromY - 35, callMsg, '#f59e0b', 2500);
+
+      // 3. Camera pans to agent B
+      this.time.delayedCall(1500, () => {
+        if (!this.userOverride) {
+          cam.pan(toPos.x, toPos.y - 40, 600, 'Sine.easeInOut');
+        }
+
+        // 4. Agent B accepts
+        this.time.delayedCall(800, () => {
+          this.showBubble(toPos.x, toY - 35, 'Estou nessa, vamos lá!', '#38bdf8', 2000);
+
+          // 5. Stay focused, end animation
+          this.time.delayedCall(2200, () => {
+            this.animating = false;
+            this.focusedAgentId = toAgent.id;
+
+            if (this.pendingState) {
+              const s = this.pendingState;
+              this.pendingState = null;
+              this.onStateUpdate(s);
+            }
+          });
+        });
+      });
+    });
+  }
+
   // ─── Empty Room ──────────────────────────────────────────────
   private renderEmptyRoom(): void {
     const desks = EMPTY_DESKS;
@@ -481,8 +663,6 @@ export class OfficeScene extends Phaser.Scene {
       const bossChar = boss.gender === 'female'
         ? FEMALE_CHARACTERS[0]
         : MALE_CHARACTERS[0];
-      this.bossCharName = bossChar;
-
       // Boss avatar
       const bossAvatarKey = avatarKeys(bossChar).talk;
       this.bossAvatar = this.add.image(bossX, bossY - 70, bossAvatarKey)
@@ -517,9 +697,10 @@ export class OfficeScene extends Phaser.Scene {
       this.add.image(bossX + 50, bossY + 8, 'furniture_coffee_mug')
         .setOrigin(0.5, 1).setScale(1.5).setDepth(bossY + 3);
 
-      // Boss name badge
+      // Boss name badge with /bmad-help
       const labelY = bossY - 150;
-      const nameText = this.add.text(bossX, labelY + 5, boss.name, {
+      const bossDisplayName = `${boss.name}  /bmad-help`;
+      const nameText = this.add.text(bossX, labelY + 5, bossDisplayName, {
         fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
         fontSize: '18px',
         fontStyle: 'bold',
@@ -529,6 +710,16 @@ export class OfficeScene extends Phaser.Scene {
         strokeThickness: 4,
         resolution: 2,
       }).setOrigin(0.5, 0).setDepth(901);
+
+      // Click boss name to copy /bmad-help
+      nameText.setInteractive({ useHandCursor: true });
+      nameText.on('pointerdown', () => {
+        navigator.clipboard.writeText('/bmad-help').then(() => {
+          const original = nameText.text;
+          nameText.setText('Copiado!');
+          this.time.delayedCall(1000, () => nameText.setText(original));
+        });
+      });
 
       const titleText = this.add.text(bossX, labelY + 26, 'BOSS', {
         fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
@@ -548,6 +739,13 @@ export class OfficeScene extends Phaser.Scene {
       badgeBg.lineStyle(1.5, 0x10b981, 0.5);
       badgeBg.strokeRoundedRect(bossX - badgeW / 2, labelY, badgeW, 46, 4);
       badgeBg.setDepth(900);
+
+      // Click boss avatar to show info dialog
+      this.bossAvatar.setInteractive({ useHandCursor: true });
+      this.bossAvatar.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+        pointer.event.stopPropagation();
+        this.toggleBossDialog(bossX, bossY);
+      });
     }
 
     // Camera

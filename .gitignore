@@ -1,15 +1,17 @@
 node_modules/
 .env
 *.log
-squads/*/
-_opensquad/_memory/company.md
-_opensquad/_memory/preferences.md
-_opensquad/_browser_profile/
-docs/
-.superpowers/
-temp/
-tests/
-test-results/
-temp/squads/
+
+# Dashboard
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.vite/
+
+# Templates (auto-generated for npm publish)
+templates/
+
+# Squad state (runtime)
+squads/*/state.json
+
+# IDE
 .claude/settings.local.json
-dashboards/test-results/
