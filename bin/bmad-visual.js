@@ -129,6 +129,14 @@ function handleInit(projectName) {
   );
   done();
 
+  // Step 4b: Antigravity rules
+  const agentsRulesSrc = path.join(templatesDir, '.agents');
+  if (fs.existsSync(agentsRulesSrc)) {
+    step('4b', totalSteps, 'Copying Antigravity rules');
+    copyDir(agentsRulesSrc, path.join(targetDir, '.agents'));
+    done();
+  }
+
   // Step 5: CLAUDE.md
   step(5, totalSteps, 'Copying CLAUDE.md');
   copyFile(

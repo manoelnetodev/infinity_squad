@@ -71,6 +71,13 @@ function main() {
     { recursive: true },
   );
 
+  console.log('[sync-templates] Copying .agents/rules...');
+  fs.cpSync(
+    path.join(ROOT, '.agents'),
+    path.join(TEMPLATES, '.agents'),
+    { recursive: true },
+  );
+
   console.log('[sync-templates] Copying CLAUDE.md...');
   fs.copyFileSync(
     path.join(ROOT, 'CLAUDE.md'),
