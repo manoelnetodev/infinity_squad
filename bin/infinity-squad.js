@@ -91,7 +91,7 @@ function handleInit(projectName) {
   }
 
   const templatesDir = getTemplatesDir();
-  const totalSteps = 6;
+  const totalSteps = 7;
 
   console.log('');
 
@@ -149,8 +149,27 @@ function handleInit(projectName) {
   );
   done();
 
-  // Step 6: .gitignore
-  step(6, totalSteps, 'Updating .gitignore');
+  // Step 6: Pre-configure BMAD agents
+  step(6, totalSteps, 'Pre-configuring BMAD agents');
+  const bmadConfigDir = path.join(targetDir, '_bmad', 'core');
+  fs.mkdirSync(bmadConfigDir, { recursive: true });
+  const configPath = path.join(bmadConfigDir, 'config.yaml');
+  if (!fs.existsSync(configPath)) {
+    const userName = process.env.USER || process.env.USERNAME || 'Dev';
+    const configContent = [
+      'code: core',
+      `user_name: "${userName}"`,
+      'communication_language: "Portuguese"',
+      'document_output_language: "Portuguese"',
+      `output_folder: "${path.join(targetDir, '_bmad-output').replace(/\\/g, '/')}"`,
+    ].join('\n') + '\n';
+    fs.writeFileSync(configPath, configContent);
+  }
+  fs.mkdirSync(path.join(targetDir, '_bmad-output'), { recursive: true });
+  done();
+
+  // Step 7: .gitignore
+  step(7, totalSteps, 'Updating .gitignore');
   const gitignorePath = path.join(targetDir, '.gitignore');
   const entries = [
     '',
