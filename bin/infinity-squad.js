@@ -19,7 +19,7 @@ const c = {
 
 const LOGO = `
 ${c.green}  ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓${c.reset}
-${c.green}  ┃${c.reset}  ${c.bold}${c.white}BMAD Visual${c.reset} ${c.dim}— AI Agent Dashboard${c.reset} ${c.green}┃${c.reset}
+${c.green}  ┃${c.reset}  ${c.bold}${c.white}Infinity Squad${c.reset} ${c.dim}— AI Agent Dashboard${c.reset} ${c.green}┃${c.reset}
 ${c.green}  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${c.reset}
 `;
 
@@ -51,7 +51,7 @@ function done() {
 function getTemplatesDir() {
   const dir = path.resolve(__dirname, '..', 'templates');
   if (!fs.existsSync(dir)) {
-    error('Templates directory not found. Try reinstalling: npm install -g bmad-visual');
+    error('Templates directory not found. Try reinstalling: npm install -g infinity-squad');
     process.exit(1);
   }
   return dir;
@@ -150,7 +150,7 @@ function handleInit(projectName) {
   const gitignorePath = path.join(targetDir, '.gitignore');
   const entries = [
     '',
-    '# bmad-visual',
+    '# infinity-squad',
     'dashboard/node_modules/',
     'dashboard/dist/',
     'squads/*/state.json',
@@ -159,7 +159,7 @@ function handleInit(projectName) {
 
   if (fs.existsSync(gitignorePath)) {
     const current = fs.readFileSync(gitignorePath, 'utf-8');
-    if (!current.includes('# bmad-visual')) {
+    if (!current.includes('# infinity-squad')) {
       fs.appendFileSync(gitignorePath, entriesToAdd);
     }
   } else {
@@ -182,14 +182,14 @@ function handleInit(projectName) {
 
   // Done!
   console.log('');
-  console.log(`  ${c.green}${c.bold}Done!${c.reset} Your BMAD Visual dashboard is ready.`);
+  console.log(`  ${c.green}${c.bold}Done!${c.reset} Your Infinity Squad dashboard is ready.`);
   console.log('');
   console.log(`  ${c.dim}Next steps:${c.reset}`);
   if (projectName) {
     console.log(`    ${c.cyan}cd ${projectName}${c.reset}`);
   }
-  console.log(`    ${c.cyan}bmad-visual open${c.reset}   ${c.dim}Open in Claude Code or Antigravity${c.reset}`);
-  console.log(`    ${c.cyan}bmad-visual dev${c.reset}    ${c.dim}Start the dashboard${c.reset}`);
+  console.log(`    ${c.cyan}infinity-squad open${c.reset}   ${c.dim}Open in Claude Code or Antigravity${c.reset}`);
+  console.log(`    ${c.cyan}infinity-squad dev${c.reset}    ${c.dim}Start the dashboard${c.reset}`);
   console.log('');
   console.log(`  ${c.dim}Available agents:${c.reset}`);
   console.log(`    /analyst  /pm  /ux  /architect  /sm  /dev  /qa  /solo-dev  /bmad-help`);
@@ -201,7 +201,7 @@ function handleDev() {
 
   if (!fs.existsSync(path.join(dashboardDir, 'package.json'))) {
     error('No dashboard found in this directory.');
-    log('Run "bmad-visual init" first to scaffold the project.');
+    log('Run "infinity-squad init" first to scaffold the project.');
     process.exit(1);
   }
 
@@ -223,12 +223,12 @@ function handleDev() {
 }
 
 function handleOpen() {
-  // Detect if we're inside a bmad-visual project
+  // Detect if we're inside a infinity-squad project
   const hasDashboard = fs.existsSync(path.join(process.cwd(), 'dashboard', 'package.json'));
   const hasSquad = fs.existsSync(path.join(process.cwd(), 'squads', 'bmad'));
   if (!hasDashboard && !hasSquad) {
-    error('No BMAD Visual project found in this directory.');
-    log('Run "bmad-visual init" first to scaffold the project.');
+    error('No Infinity Squad project found in this directory.');
+    log('Run "infinity-squad init" first to scaffold the project.');
     process.exit(1);
   }
 
@@ -268,10 +268,10 @@ function showHelp() {
   console.log(LOGO);
   console.log(`  ${c.bold}Usage:${c.reset}`);
   console.log('');
-  console.log(`    ${c.cyan}bmad-visual init${c.reset}            Scaffold into current directory`);
-  console.log(`    ${c.cyan}bmad-visual init ${c.dim}<name>${c.reset}      Create new project directory`);
-  console.log(`    ${c.cyan}bmad-visual dev${c.reset}             Start the dashboard dev server`);
-  console.log(`    ${c.cyan}bmad-visual open${c.reset}            Open project in Claude Code or Antigravity`);
+  console.log(`    ${c.cyan}infinity-squad init${c.reset}            Scaffold into current directory`);
+  console.log(`    ${c.cyan}infinity-squad init ${c.dim}<name>${c.reset}      Create new project directory`);
+  console.log(`    ${c.cyan}infinity-squad dev${c.reset}             Start the dashboard dev server`);
+  console.log(`    ${c.cyan}infinity-squad open${c.reset}            Open project in Claude Code or Antigravity`);
   console.log('');
   console.log(`  ${c.bold}Agents:${c.reset}`);
   console.log('');

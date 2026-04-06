@@ -1,9 +1,9 @@
 {
-  "name": "bmad-visual",
+  "name": "infinity-squad",
   "version": "0.1.0",
   "description": "BMAD Method visual dashboard — AI agent squad with Phaser.js office",
   "bin": {
-    "bmad-visual": "./bin/bmad-visual.js"
+    "infinity-squad": "./bin/infinity-squad.js"
   },
   "files": [
     "bin/",

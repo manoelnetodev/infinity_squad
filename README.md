@@ -1,4 +1,4 @@
-# BMAD Visual
+# Infinity Squad
 
 Dashboard visual 2D com agentes [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) em um escritorio virtual usando Phaser.js. Cada agente da IA tem sua mesa, animacoes e baloes de fala — tudo atualizado em tempo real enquanto voce trabalha no seu projeto.
 
@@ -19,9 +19,9 @@ Dashboard visual 2D com agentes [BMAD Method](https://github.com/bmad-code-org/B
 ### Projeto novo (do zero)
 
 ```bash
-npx bmad-visual init meu-projeto
+npx infinity-squad init meu-projeto
 cd meu-projeto
-bmad-visual dev
+infinity-squad dev
 ```
 
 Isso cria a pasta `meu-projeto/` com toda a estrutura pronta.
@@ -31,7 +31,7 @@ Isso cria a pasta `meu-projeto/` com toda a estrutura pronta.
 Entre na raiz do seu projeto e rode:
 
 ```bash
-npx bmad-visual init
+npx infinity-squad init
 ```
 
 O comando vai adicionar ao seu projeto:
@@ -54,7 +54,7 @@ O comando vai adicionar ao seu projeto:
 ### Iniciar o dashboard
 
 ```bash
-bmad-visual dev
+infinity-squad dev
 ```
 
 Abre em `http://localhost:5174`. O dashboard mostra o escritorio virtual com os agentes nas suas mesas.
@@ -78,7 +78,7 @@ No terminal do Claude Code ou Antigravity, use os slash commands:
 Para abrir o terminal do Claude Code ou Antigravity direto no projeto:
 
 ```bash
-bmad-visual open
+infinity-squad open
 ```
 
 O comando detecta automaticamente qual CLI esta instalado e abre na pasta atual.
@@ -142,12 +142,12 @@ Voce digita        O skill atualiza       O dashboard reage
 ## CLI
 
 ```
-bmad-visual init            Scaffold na pasta atual
-bmad-visual init <nome>     Cria nova pasta com o projeto
-bmad-visual dev             Inicia o dashboard dev server
-bmad-visual open            Abre o projeto no Claude Code ou Antigravity
-bmad-visual --help          Mostra ajuda
-bmad-visual --version       Mostra versao
+infinity-squad init            Scaffold na pasta atual
+infinity-squad init <nome>     Cria nova pasta com o projeto
+infinity-squad dev             Inicia o dashboard dev server
+infinity-squad open            Abre o projeto no Claude Code ou Antigravity
+infinity-squad --help          Mostra ajuda
+infinity-squad --version       Mostra versao
 ```
 
 ---
