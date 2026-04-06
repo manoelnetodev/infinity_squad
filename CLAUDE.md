@@ -1,23 +1,25 @@
-# BMAD Visual — Dashboard de Agentes
+# Infinity Squad — Dashboard de Agentes
 
 Dashboard visual 2D com agentes BMAD Method em um escritorio virtual usando Phaser.js.
 
 ## Estrutura
 
 ```
-├── dashboard/              ← App visual (Vite + React + Phaser.js)
-│   ├── src/office/         ← OfficeScene, AgentSprite, RoomBuilder, PhaserGame
-│   ├── src/hooks/          ← useSquadSocket (WebSocket + HTTP polling)
-│   ├── src/store/          ← useSquadStore (Zustand)
-│   ├── src/plugin/         ← squadWatcher (file watcher + reset API)
-│   ├── src/types/          ← state.ts (interfaces)
-│   └── public/assets/      ← Sprites (avatars, desks, furniture)
-├── squads/bmad/
-│   ├── squad.yaml          ← Definicao do squad
-│   ├── state.json          ← Estado dos agentes (dashboard le este arquivo)
-│   └── agents/             ← 8 definicoes de agentes BMAD
-├── .claude/skills/         ← 9 slash commands (Claude Code)
-├── .agent/workflows/       ← 9 slash commands (Antigravity)
+├── infinity_squad/
+│   ├── dashboard/          ← App visual (Vite + React + Phaser.js)
+│   │   ├── src/office/     ← OfficeScene, AgentSprite, RoomBuilder, PhaserGame
+│   │   ├── src/hooks/      ← useSquadSocket (WebSocket + HTTP polling)
+│   │   ├── src/store/      ← useSquadStore (Zustand)
+│   │   ├── src/plugin/     ← squadWatcher (file watcher + reset API)
+│   │   ├── src/types/      ← state.ts (interfaces)
+│   │   └── public/assets/  ← Sprites (avatars, desks, furniture)
+│   └── squads/bmad/
+│       ├── squad.yaml      ← Definicao do squad
+│       ├── state.json      ← Estado dos agentes (dashboard le este arquivo)
+│       └── agents/         ← 9 definicoes de agentes BMAD
+├── .claude/skills/         ← Slash commands (Claude Code)
+├── .agent/workflows/       ← Workflows (Antigravity)
+├── .agents/rules/          ← Rules de roteamento automatico
 └── CLAUDE.md
 ```
 
@@ -37,7 +39,7 @@ Dashboard visual 2D com agentes BMAD Method em um escritorio virtual usando Phas
 
 ## Como Funciona
 
-1. O dashboard le `squads/bmad/state.json` via file watcher
+1. O dashboard le `infinity_squad/squads/bmad/state.json` via file watcher
 2. Quando um agente e invocado via `/comando`, o skill atualiza o `state.json`
 3. O dashboard reage em tempo real: animacoes de delegacao (boss), baloes, auto-focus
 4. Sem argumentos (`/ux`): agente se apresenta
@@ -46,9 +48,7 @@ Dashboard visual 2D com agentes BMAD Method em um escritorio virtual usando Phas
 ## Dashboard
 
 ```bash
-cd dashboard
-npm install
-npm run dev
+infinity-squad dev
 ```
 
 Abre `http://localhost:5174`

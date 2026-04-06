@@ -64,7 +64,7 @@ Se o usuário pedir mais de uma coisa na mesma mensagem (ex: "pesquisa o mercado
 ## Atualização do Dashboard
 
 Antes de executar o workflow:
-1. Leia `squads/bmad/state.json`
+1. Leia `infinity_squad/squads/bmad/state.json`
 2. Sete `"status": "running"` no squad
 3. Encontre o agente escolhido e sete `"status": "working"`
 4. Sete `"updatedAt"` para o timestamp ISO atual
@@ -73,7 +73,7 @@ Antes de executar o workflow:
 Depois leia `.claude/skills/{skill-do-agente}/SKILL.md` e siga todas as instruções.
 
 Ao concluir:
-1. Leia `squads/bmad/state.json`
+1. Leia `infinity_squad/squads/bmad/state.json`
 2. Sete o agente para `"status": "done"`
 3. Sete `"updatedAt"` para o timestamp ISO atual
 4. Escreva o `state.json` atualizado

@@ -95,12 +95,16 @@ function handleInit(projectName) {
 
   console.log('');
 
+  // Create infinity_squad/ subfolder
+  const squadDir = path.join(targetDir, 'infinity_squad');
+  fs.mkdirSync(squadDir, { recursive: true });
+
   // Step 1: Dashboard
   step(1, totalSteps, 'Copying dashboard');
   const dashSrc = path.join(templatesDir, 'dashboard');
-  const dashDest = path.join(targetDir, 'dashboard');
+  const dashDest = path.join(squadDir, 'dashboard');
   if (fs.existsSync(dashDest)) {
-    warn('dashboard/ already exists, overwriting...');
+    warn('infinity_squad/dashboard/ already exists, overwriting...');
   }
   copyDir(dashSrc, dashDest);
   done();
@@ -109,7 +113,7 @@ function handleInit(projectName) {
   step(2, totalSteps, 'Copying BMAD squad & agents');
   copyDir(
     path.join(templatesDir, 'squads'),
-    path.join(targetDir, 'squads'),
+    path.join(squadDir, 'squads'),
   );
   done();
 
@@ -151,9 +155,9 @@ function handleInit(projectName) {
   const entries = [
     '',
     '# infinity-squad',
-    'dashboard/node_modules/',
-    'dashboard/dist/',
-    'squads/*/state.json',
+    'infinity_squad/dashboard/node_modules/',
+    'infinity_squad/dashboard/dist/',
+    'infinity_squad/squads/*/state.json',
   ];
   const entriesToAdd = entries.join('\n') + '\n';
 
@@ -172,12 +176,12 @@ function handleInit(projectName) {
   log('Installing dashboard dependencies...');
   try {
     execSync('npm install', {
-      cwd: path.join(targetDir, 'dashboard'),
+      cwd: path.join(squadDir, 'dashboard'),
       stdio: 'pipe',
     });
     success('Dependencies installed');
   } catch {
-    warn('Could not auto-install. Run manually: cd dashboard && npm install');
+    warn('Could not auto-install. Run manually: cd infinity_squad/dashboard && npm install');
   }
 
   // Done!
@@ -197,10 +201,10 @@ function handleInit(projectName) {
 }
 
 function handleDev() {
-  const dashboardDir = path.join(process.cwd(), 'dashboard');
+  const dashboardDir = path.join(process.cwd(), 'infinity_squad', 'dashboard');
 
   if (!fs.existsSync(path.join(dashboardDir, 'package.json'))) {
-    error('No dashboard found in this directory.');
+    error('No dashboard found. Expected infinity_squad/dashboard/');
     log('Run "infinity-squad init" first to scaffold the project.');
     process.exit(1);
   }
@@ -224,8 +228,8 @@ function handleDev() {
 
 function handleOpen() {
   // Detect if we're inside a infinity-squad project
-  const hasDashboard = fs.existsSync(path.join(process.cwd(), 'dashboard', 'package.json'));
-  const hasSquad = fs.existsSync(path.join(process.cwd(), 'squads', 'bmad'));
+  const hasDashboard = fs.existsSync(path.join(process.cwd(), 'infinity_squad', 'dashboard', 'package.json'));
+  const hasSquad = fs.existsSync(path.join(process.cwd(), 'infinity_squad', 'squads', 'bmad'));
   if (!hasDashboard && !hasSquad) {
     error('No Infinity Squad project found in this directory.');
     log('Run "infinity-squad init" first to scaffold the project.');

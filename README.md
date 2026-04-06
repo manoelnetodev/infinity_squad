@@ -38,14 +38,14 @@ O comando vai adicionar ao seu projeto:
 
 | Pasta/Arquivo | O que faz |
 |---|---|
-| `dashboard/` | App visual (Vite + React + Phaser.js) |
-| `squads/bmad/` | Definicao do squad + agentes |
+| `infinity_squad/dashboard/` | App visual (Vite + React + Phaser.js) |
+| `infinity_squad/squads/bmad/` | Definicao do squad + agentes |
 | `.claude/skills/` | Slash commands para Claude Code |
 | `.agent/workflows/` | Workflows para Antigravity |
 | `.agents/rules/` | Rules de roteamento automatico (Antigravity) |
 | `CLAUDE.md` | Contexto do projeto para a IA |
 
-> Se a pasta `dashboard/` ja existir, ela sera sobrescrita. As outras pastas sao adicionadas sem afetar o resto do seu projeto.
+> O `dashboard/` e `squads/` ficam organizados dentro de `infinity_squad/`. As pastas de skills, workflows e rules ficam na raiz (exigido pelo Claude Code e Antigravity).
 
 ---
 
@@ -108,7 +108,7 @@ O arquivo `.agents/rules/bmadrules.md` analisa a intencao da mensagem e encaminh
 
 ```
 Voce digita        O skill atualiza       O dashboard reage
-/ux ────────>  squads/bmad/state.json ────────> animacao em tempo real
+/ux ──> infinity_squad/squads/bmad/state.json ──> animacao em tempo real
 ```
 
 1. Voce invoca um agente via `/comando` ou texto livre
@@ -122,15 +122,16 @@ Voce digita        O skill atualiza       O dashboard reage
 ## Estrutura do projeto
 
 ```
-├── dashboard/              App visual (Vite + React + Phaser.js)
-│   ├── src/office/         OfficeScene, AgentSprite, RoomBuilder
-│   ├── src/hooks/          useSquadSocket (WebSocket + HTTP polling)
-│   ├── src/store/          useSquadStore (Zustand)
-│   └── public/assets/      Sprites (avatars, mesas, moveis)
-├── squads/bmad/
-│   ├── squad.yaml          Definicao do squad
-│   ├── state.json          Estado dos agentes (contrato com o dashboard)
-│   └── agents/             Definicoes dos 9 agentes BMAD
+├── infinity_squad/
+│   ├── dashboard/          App visual (Vite + React + Phaser.js)
+│   │   ├── src/office/     OfficeScene, AgentSprite, RoomBuilder
+│   │   ├── src/hooks/      useSquadSocket (WebSocket + HTTP polling)
+│   │   ├── src/store/      useSquadStore (Zustand)
+│   │   └── public/assets/  Sprites (avatars, mesas, moveis)
+│   └── squads/bmad/
+│       ├── squad.yaml      Definicao do squad
+│       ├── state.json      Estado dos agentes (contrato com o dashboard)
+│       └── agents/         Definicoes dos 9 agentes BMAD
 ├── .claude/skills/         Slash commands (Claude Code)
 ├── .agent/workflows/       Workflows (Antigravity)
 ├── .agents/rules/          Rules de roteamento automatico
