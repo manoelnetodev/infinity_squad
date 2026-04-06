@@ -75,6 +75,14 @@ No terminal do Claude Code ou Antigravity, use os slash commands:
 | `/solo-dev` | Barry | Dev rapido end-to-end |
 | `/bmad-help` | — | Guia de agentes |
 
+Para abrir o terminal do Claude Code ou Antigravity direto no projeto:
+
+```bash
+bmad-visual open
+```
+
+O comando detecta automaticamente qual CLI esta instalado e abre na pasta atual.
+
 **Sem argumentos** — o agente se apresenta:
 ```
 /ux
@@ -137,6 +145,7 @@ Voce digita        O skill atualiza       O dashboard reage
 bmad-visual init            Scaffold na pasta atual
 bmad-visual init <nome>     Cria nova pasta com o projeto
 bmad-visual dev             Inicia o dashboard dev server
+bmad-visual open            Abre o projeto no Claude Code ou Antigravity
 bmad-visual --help          Mostra ajuda
 bmad-visual --version       Mostra versao
 ```

@@ -188,6 +188,7 @@ function handleInit(projectName) {
   if (projectName) {
     console.log(`    ${c.cyan}cd ${projectName}${c.reset}`);
   }
+  console.log(`    ${c.cyan}bmad-visual open${c.reset}   ${c.dim}Open in Claude Code or Antigravity${c.reset}`);
   console.log(`    ${c.cyan}bmad-visual dev${c.reset}    ${c.dim}Start the dashboard${c.reset}`);
   console.log('');
   console.log(`  ${c.dim}Available agents:${c.reset}`);
@@ -221,6 +222,48 @@ function handleDev() {
   }
 }
 
+function handleOpen() {
+  // Detect if we're inside a bmad-visual project
+  const hasDashboard = fs.existsSync(path.join(process.cwd(), 'dashboard', 'package.json'));
+  const hasSquad = fs.existsSync(path.join(process.cwd(), 'squads', 'bmad'));
+  if (!hasDashboard && !hasSquad) {
+    error('No BMAD Visual project found in this directory.');
+    log('Run "bmad-visual init" first to scaffold the project.');
+    process.exit(1);
+  }
+
+  console.log(LOGO);
+
+  // Try Claude Code first, then Antigravity
+  const tools = [
+    { name: 'Claude Code', cmd: 'claude', check: 'claude --version' },
+    { name: 'Antigravity', cmd: 'antigravity', check: 'antigravity --version' },
+  ];
+
+  for (const tool of tools) {
+    try {
+      execSync(tool.check, { stdio: 'pipe' });
+      log(`Opening with ${c.bold}${tool.name}${c.reset}...`);
+      console.log('');
+      console.log(`  ${c.dim}Available agents:${c.reset}`);
+      console.log(`    /analyst  /pm  /ux  /architect  /sm  /dev  /qa  /solo-dev  /bmad-help`);
+      console.log('');
+      execSync(tool.cmd, { cwd: process.cwd(), stdio: 'inherit' });
+      return;
+    } catch {
+      // tool not found, try next
+    }
+  }
+
+  error('No compatible AI CLI found.');
+  console.log('');
+  log('Install one of the following:');
+  console.log(`    ${c.cyan}Claude Code${c.reset}    ${c.dim}npm install -g @anthropic-ai/claude-code${c.reset}`);
+  console.log(`    ${c.cyan}Antigravity${c.reset}    ${c.dim}https://antigravity.dev${c.reset}`);
+  console.log('');
+  process.exit(1);
+}
+
 function showHelp() {
   console.log(LOGO);
   console.log(`  ${c.bold}Usage:${c.reset}`);
@@ -228,6 +271,7 @@ function showHelp() {
   console.log(`    ${c.cyan}bmad-visual init${c.reset}            Scaffold into current directory`);
   console.log(`    ${c.cyan}bmad-visual init ${c.dim}<name>${c.reset}      Create new project directory`);
   console.log(`    ${c.cyan}bmad-visual dev${c.reset}             Start the dashboard dev server`);
+  console.log(`    ${c.cyan}bmad-visual open${c.reset}            Open project in Claude Code or Antigravity`);
   console.log('');
   console.log(`  ${c.bold}Agents:${c.reset}`);
   console.log('');
@@ -253,6 +297,8 @@ if (!command || command === '--help' || command === '-h') {
   handleInit(args[1]);
 } else if (command === 'dev') {
   handleDev();
+} else if (command === 'open') {
+  handleOpen();
 } else if (command === '--version' || command === '-v') {
   const pkg = require('../package.json');
   console.log(pkg.version);
